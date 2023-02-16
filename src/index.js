@@ -7,21 +7,25 @@ import SignupPage from './pages/SignupPage';
 import UserPage from './pages/UserPage';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import { Provider } from 'react-redux';
+import store from './utils/store';
 import './styles/main.css';
 import './styles/index.css';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <React.StrictMode>
-    <Router>
-      <Header />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/signin" element={<SigninPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route path="/user/:userId" element={<UserPage />} />
-      </Routes>
-      <Footer />
-    </Router>
-  </React.StrictMode>
+  <Provider store={store}>
+    <React.StrictMode>
+      <Router>
+        <Header />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/signin" element={<SigninPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/user/:userId" element={<UserPage />} />
+        </Routes>
+        <Footer />
+      </Router>
+    </React.StrictMode>
+  </Provider>
 );
