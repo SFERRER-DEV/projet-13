@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserCircle } from '@fortawesome/free-solid-svg-icons';
@@ -35,7 +35,7 @@ const checkValidity = () => {
 const validateField = (field) => {
   /**
    * @type {Object}
-   * @description Les états de validité concernant toutes les contraintes
+   * @description Les états de validité de toutes les contraintes d'un champ de formulaire
    */
   const validityState = field.validity;
   resetValidation(field);
@@ -61,7 +61,7 @@ const resetValidation = (field) => {
 
 /**
  * Neutraliser les info-bulles des contraintes de validation
- * pour qu'elles n'apparaissent
+ * pour qu'elles n'apparaissent pas
  */
 const disableBubbleMessages = () => {
   /**
@@ -101,18 +101,29 @@ const updateMessageValidation = (field, message) => {
 function Signin() {
   const [userName, setUserName] = useState('');
   const [password, setPassword] = useState('');
+
+  const inputName = useRef();
+  const inputPassword = useRef();
+
   const [formValidator, setFormValidator] = useState(false);
 
   useEffect(() => {
     disableBubbleMessages();
   }, []);
 
+  useEffect(() => {
+    console.log(`userName ${userName}`);
+  }, [userName]);
+
   /**
-   * 
-   * @param {*} e 
-   * @returns 
+   *
+   * @param {*} e
+   * @returns
    */
   const signIn = (e) => {
+    // Rester sur le formulaire en erreur
+    e.preventDefault();
+
     if (checkValidity()) {
       setFormValidator(true);
     } else {
@@ -120,10 +131,13 @@ function Signin() {
     }
 
     if (!formValidator) {
+      // Rester sur le formulaire en erreur
+      //inputPassword.current.focus()
+      e.preventDefault();
       return;
     } else {
-      // Rester sur le formulaire en erreur
-      e.preventDefault();
+      console.log(`inputName ${inputName.current.value}`);
+      console.log(`inputPassword ${inputPassword.current.value}`);
     }
   };
 
@@ -146,6 +160,7 @@ function Signin() {
             onChange={(e) => {
               setUserName(e.target.value);
             }}
+            ref={inputName}
           />
         </div>
         <div className="input-wrapper formData">
@@ -156,6 +171,7 @@ function Signin() {
             minLength="6"
             required
             className="text-control"
+            ref={inputPassword}
           />
         </div>
         <div className="input-remember formData">
