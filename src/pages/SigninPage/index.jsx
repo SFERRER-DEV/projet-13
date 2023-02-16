@@ -1,9 +1,15 @@
+import Signin from '../../components/Signin';
+
 /**
  * @description Page de login
  * @returns {JSX.Element} La page Signin
  */
-function Signin() {
-	return <p>Signin Page</p>;
+function SigninPage() {
+  return (
+    <main className="main bg-dark">
+      <Signin />
+    </main>
+  );
 }
 
-export default Signin;
+export default SigninPage;

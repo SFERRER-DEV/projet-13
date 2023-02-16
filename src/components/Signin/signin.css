@@ -1,0 +1,24 @@
+/*  Montrer les erreurs de validation >>> */
+.formData[data-error]::after {
+  content: attr(data-error);
+  font-size: 0.85em;
+  color: #e54858;
+  display: block;
+  margin: 0.25em;
+  text-align: right;
+  line-height: 1em;
+  opacity: 0;
+}
+.formData[data-error-visible='true']::after {
+  opacity: 1;
+}
+.formData[data-error-visible='true'] .text-control {
+  border: 2px solid #e54858;
+}
+.formData[data-error-visible='false']::after {
+  opacity: 0;
+}
+.formData[data-error-visible='false'] .text-control {
+  border: none;
+}
+/* <<<  Montrer les erreurs de validation */
