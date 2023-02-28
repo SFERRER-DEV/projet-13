@@ -4,27 +4,34 @@ import axios from 'axios';
 const initialState = {
   // permet de suivre l'état de la requête
   status: 'void',
-  token: null,
+  // profile data
+  email: null,
+  firstName: null,
+  lastName: null,
+  createdAt: null,
+  updatedAt: null,
+  id: null,
   // l'erreur lorsque la requête échoue
   error: null,
 };
 
-/**
- * Authentifier l'utilisateur pour obtenir son jeton
- * @param {string} email
- * @param {string} password
- * @returns {void}
- */
-export function fetchOrUpdateToken(email, password) {
+export function fetchOrUpdateProfile(token) {
   return async (dispatch, getState) => {
     dispatch(fetching());
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+
     try {
       const response = await axios.post(
-        'http://localhost:3001/api/v1/user/login',
-        { email, password }
+        'http://localhost:3001/api/v1/user/profile',
+        {},
+        config
       );
-      const token = await response.data.body.token;
-      dispatch(resolved(token));
+      const data = await response.data.body;
+      dispatch(resolved(data));
     } catch (error) {
       console.log(error);
       dispatch(rejected(error.message));
@@ -38,10 +45,10 @@ export function fetchOrUpdateToken(email, password) {
  * @param {object} initialState - Le state initial du reducer
  * @param {object} reducers - Les actions creator
  * @returns Actions
- * @returns Reducer
+ * @return Reducer
  */
 const { actions, reducer } = createSlice({
-  name: 'login',
+  name: 'profile',
   initialState,
   reducers: {
     // Action fetching
@@ -66,7 +73,12 @@ const { actions, reducer } = createSlice({
       reducer: (draft, action) => {
         if (draft.status === 'pending' || draft.status === 'updating') {
           draft.status = 'resolved';
-          draft.token = action.payload;
+          draft.email = action.payload.email;
+          draft.id = action.payload.id;
+          draft.firstName = action.payload.firstName;
+          draft.lastName = action.payload.lastName;
+          draft.createdAt = action.payload.createdAt;
+          draft.updatedAt = action.payload.updatedAt;
           return;
         }
         return;
@@ -76,7 +88,6 @@ const { actions, reducer } = createSlice({
     rejected: (draft, action) => {
       if (draft.status === 'pending' || draft.status === 'updating') {
         draft.error = action.payload;
-        draft.token = null;
         draft.status = 'rejected';
         return;
       }

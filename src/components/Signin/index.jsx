@@ -1,11 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useDispatch, useSelector, useStore } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserCircle } from '@fortawesome/free-solid-svg-icons';
 import './signin.css';
 import { fetchOrUpdateToken } from '../../features/token';
-import { tokenSelector } from '../../utils/selectors';
+import { fetchOrUpdateProfile } from '../../features/profile';
+import {
+  tokenSelector,
+  userIdSelector,
+  connectedSelector,
+} from '../../utils/selectors';
 
 /**
  * Tester tous les champs du formulaire à valider
@@ -107,6 +112,8 @@ function Signin() {
   const [userName, setUserName] = useState('');
   const [formValidator, setFormValidator] = useState(false);
   const token = useSelector(tokenSelector);
+  const id = useSelector(userIdSelector);
+  const connected = useSelector(connectedSelector);
 
   const inputName = useRef();
   const inputPassword = useRef();
@@ -131,20 +138,28 @@ function Signin() {
     const password = inputPassword.current.value;
     // Authentifier l'utilisateur
     if (formValidator) {
-      // Tenter d'obtenir le jeton
+      // Tenter d'obtenir le jeton d'authentification ✅
       dispatch(fetchOrUpdateToken(name, password));
     }
   }, [dispatch, formValidator]);
 
-  // 2️⃣ Obtenir le profile de l'utilisateur qui a obtenu un jeton
+  // 2️⃣ Obtenir le profil de l'utilisateur qui a obtenu un jeton
   useEffect(() => {
     console.log(`useEffect 2 : ${token}`);
-    const regex =
-      /^Bearer [A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/;
-    if (regex.test(token)) {
-      // ✅
+    const regex = /^[\w-]+\.[\w-]+\.[\w-]+$/;
+    if (token !== null && regex.test(token)) {
+      // Obtenir le profil de l'utilisateur authentifié ✅
+      dispatch(fetchOrUpdateProfile(token));
     }
-  }, [token]);
+  }, [dispatch, token]);
+
+  // 3️⃣ Rediriger l'utilisateur connecté
+  useEffect(() => {
+    console.log(`useEffect 3 : ${id}`);
+    if (connected) {
+      navigate(`/user/${id}`);
+    }
+  }, [connected, id, navigate]);
 
   /**
    *
@@ -159,7 +174,7 @@ function Signin() {
      * @description est-ce que les champs de formulaire respectent leurs contraintes de validité ?
      */
     const valid = checkValidity();
-
+    setFormValidator(false);
     if (!valid) {
       // ⛔
       // inputPassword.current.focus()
