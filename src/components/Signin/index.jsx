@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { useDispatch, useSelector, useStore } from 'react-redux';
+import { useNavigate, Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserCircle } from '@fortawesome/free-solid-svg-icons';
 import './signin.css';
+import { fetchOrUpdateToken } from '../../features/token';
+import { tokenSelector } from '../../utils/selectors';
 
 /**
  * Tester tous les champs du formulaire à valider
@@ -99,45 +102,71 @@ const updateMessageValidation = (field, message) => {
  * @returns {JSX.Element} Composant Signin
  */
 function Signin() {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [userName, setUserName] = useState('');
-  const [password, setPassword] = useState('');
+  const [formValidator, setFormValidator] = useState(false);
+  const token = useSelector(tokenSelector);
 
   const inputName = useRef();
   const inputPassword = useRef();
 
-  const [formValidator, setFormValidator] = useState(false);
-
+  // Lors du premier chargement de formulaire, désactiver les info-bulles de l'API Validation
   useEffect(() => {
     disableBubbleMessages();
   }, []);
 
+  // 1️⃣ Tenter l'authentification quand le formulaire est validé
   useEffect(() => {
-    console.log(`userName ${userName}`);
-  }, [userName]);
+    console.log(`useEffect 1 : ${formValidator}`);
+    /**
+     * @type {string}
+     * @description Le courrier électronique utilisateur est le login de connection
+     */
+    const name = inputName.current.value;
+    /**
+     * @type {string}
+     * @description Le mot de passe
+     */
+    const password = inputPassword.current.value;
+    // Authentifier l'utilisateur
+    if (formValidator) {
+      // Tenter d'obtenir le jeton
+      dispatch(fetchOrUpdateToken(name, password));
+    }
+  }, [dispatch, formValidator]);
+
+  // 2️⃣ Obtenir le profile de l'utilisateur qui a obtenu un jeton
+  useEffect(() => {
+    console.log(`useEffect 2 : ${token}`);
+    const regex =
+      /^Bearer [A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/;
+    if (regex.test(token)) {
+      // ✅
+    }
+  }, [token]);
 
   /**
    *
    * @param {*} e
    * @returns
    */
-  const signIn = (e) => {
-    // Rester sur le formulaire en erreur
+  const signUser = (e) => {
+    // Rester sur le formulaire
     e.preventDefault();
+    /**
+     * @type {boolean}
+     * @description est-ce que les champs de formulaire respectent leurs contraintes de validité ?
+     */
+    const valid = checkValidity();
 
-    if (checkValidity()) {
-      setFormValidator(true);
-    } else {
-      setFormValidator(false);
-    }
-
-    if (!formValidator) {
-      // Rester sur le formulaire en erreur
-      //inputPassword.current.focus()
-      e.preventDefault();
+    if (!valid) {
+      // ⛔
+      // inputPassword.current.focus()
       return;
     } else {
-      console.log(`inputName ${inputName.current.value}`);
-      console.log(`inputPassword ${inputPassword.current.value}`);
+      // ✅
+      setFormValidator(true);
     }
   };
 
@@ -182,7 +211,7 @@ function Signin() {
           className="sign-in-button"
           type="submit"
           name="sign-in"
-          onClick={(e) => signIn(e)}
+          onClick={(e) => signUser(e)}
         >
           Sign In
         </button>
