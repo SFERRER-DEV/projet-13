@@ -17,13 +17,14 @@ const initialState = {
 
 export function fetchOrUpdateProfile(token) {
   return async (dispatch, getState) => {
+    // Régler le statut de départ 🏁
     dispatch(fetching());
     const config = {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     };
-
+    // Obtenir toutes les informations sur un utilisateur 🧐
     try {
       const response = await axios.post(
         'http://localhost:3001/api/v1/user/profile',
@@ -51,7 +52,7 @@ const { actions, reducer } = createSlice({
   name: 'profile',
   initialState,
   reducers: {
-    // Action fetching
+    // Action fetching 🤞
     fetching: (draft, action) => {
       if (draft.status === 'void') {
         draft.status = 'pending';
@@ -68,27 +69,41 @@ const { actions, reducer } = createSlice({
       }
       return;
     },
-    // Action resolved
+    // Action resolved 👍
     resolved: {
       reducer: (draft, action) => {
         if (draft.status === 'pending' || draft.status === 'updating') {
-          draft.status = 'resolved';
           draft.email = action.payload.email;
           draft.id = action.payload.id;
           draft.firstName = action.payload.firstName;
           draft.lastName = action.payload.lastName;
           draft.createdAt = action.payload.createdAt;
           draft.updatedAt = action.payload.updatedAt;
+          draft.status = 'resolved';
           return;
         }
         return;
       },
     },
-    // Action rejected
+    // Action rejected 👎
     rejected: (draft, action) => {
       if (draft.status === 'pending' || draft.status === 'updating') {
         draft.error = action.payload;
         draft.status = 'rejected';
+        return;
+      }
+      return;
+    },
+    // Action forget 👋
+    forget: (draft, action) => {
+      if (draft.status === 'resolved' && draft.id === action.payload) {
+        draft.email = null;
+        draft.id = null;
+        draft.firstName = null;
+        draft.lastName = null;
+        draft.createdAt = null;
+        draft.updatedAt = null;
+        draft.status = 'void';
         return;
       }
       return;
@@ -98,5 +113,6 @@ const { actions, reducer } = createSlice({
 
 // Extraire les actions
 const { fetching, resolved, rejected } = actions;
+export const { forget } = actions;
 
 export default reducer;

@@ -10,14 +10,16 @@ const initialState = {
 };
 
 /**
- * Authentifier l'utilisateur pour obtenir son jeton
+ * Authentifier l'utilisateur pour obtenir son jeton ou oublier un jeton obtenu pour se déconnecter
  * @param {string} email
  * @param {string} password
  * @returns {void}
  */
 export function fetchOrUpdateToken(email, password) {
   return async (dispatch, getState) => {
+    // Régler le statut de départ 🏁
     dispatch(fetching());
+    // Obtenir le jeton d'un compte utilisateur 👮‍♂️
     try {
       const response = await axios.post(
         'http://localhost:3001/api/v1/user/login',
@@ -44,7 +46,7 @@ const { actions, reducer } = createSlice({
   name: 'login',
   initialState,
   reducers: {
-    // Action fetching
+    // Action fetching 🤞
     fetching: (draft, action) => {
       if (draft.status === 'void') {
         draft.status = 'pending';
@@ -61,7 +63,7 @@ const { actions, reducer } = createSlice({
       }
       return;
     },
-    // Action resolved
+    // Action resolved 👍
     resolved: {
       reducer: (draft, action) => {
         if (draft.status === 'pending' || draft.status === 'updating') {
@@ -72,7 +74,7 @@ const { actions, reducer } = createSlice({
         return;
       },
     },
-    // Action rejected
+    // Action rejected 👎
     rejected: (draft, action) => {
       if (draft.status === 'pending' || draft.status === 'updating') {
         draft.error = action.payload;
@@ -82,10 +84,20 @@ const { actions, reducer } = createSlice({
       }
       return;
     },
+    // Action deconnect 👋
+    deconnect: (draft, action) => {
+      if (draft.status === 'resolved' && draft.token === action.payload) {
+        draft.token = null;
+        draft.status = 'void';
+        return;
+      }
+      return;
+    },
   },
 });
 
 // Extraire les actions
 const { fetching, resolved, rejected } = actions;
+export const { deconnect } = actions;
 
 export default reducer;

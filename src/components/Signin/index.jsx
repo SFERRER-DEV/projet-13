@@ -109,13 +109,29 @@ const updateMessageValidation = (field, message) => {
 function Signin() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  /** @typedef {string} userName Le courrier électronique de l'utilisateur saisi dans le champ du formulaire  */
   const [userName, setUserName] = useState('');
-  const [formValidator, setFormValidator] = useState(false);
-  const token = useSelector(tokenSelector);
+  /**
+   * @typedef {Object} login
+   * @property {string} token Le jeton d'authentification de l'utilisateur stocké dans le state global
+   * @property {string} status Permet de suivre l'état de la requête (void, fetching, updating, rejected)
+   */
+  /** @type {login} */
+  const login = useSelector(tokenSelector);
+  /**
+   * @type {string}
+   * @description l'identifiant de l'utilisateur stocké dans le state global
+   */
   const id = useSelector(userIdSelector);
-  const connected = useSelector(connectedSelector);
-
-  const inputName = useRef();
+  /**
+   * @type {boolean}
+   * @description Est-ce que l'utilisateur est connecté ? (A-t-il un jeton et id qui ont été stockés dans le state global)
+   */
+  const isConnected = useSelector(connectedSelector);
+  /**
+   * @type {Object}
+   * @description Référence vers un élément du DOM
+   */
   const inputPassword = useRef();
 
   // Lors du premier chargement de formulaire, désactiver les info-bulles de l'API Validation
@@ -123,48 +139,33 @@ function Signin() {
     disableBubbleMessages();
   }, []);
 
-  // 1️⃣ Tenter l'authentification quand le formulaire est validé
+  // 2️⃣ Obtenir le profil de l'utilisateur qui a obtenu un jeton ✅
   useEffect(() => {
-    console.log(`useEffect 1 : ${formValidator}`);
-    /**
-     * @type {string}
-     * @description Le courrier électronique utilisateur est le login de connection
-     */
-    const name = inputName.current.value;
-    /**
-     * @type {string}
-     * @description Le mot de passe
-     */
-    const password = inputPassword.current.value;
-    // Authentifier l'utilisateur
-    if (formValidator) {
-      // Tenter d'obtenir le jeton d'authentification ✅
-      dispatch(fetchOrUpdateToken(name, password));
-    }
-  }, [dispatch, formValidator]);
-
-  // 2️⃣ Obtenir le profil de l'utilisateur qui a obtenu un jeton
-  useEffect(() => {
-    console.log(`useEffect 2 : ${token}`);
     const regex = /^[\w-]+\.[\w-]+\.[\w-]+$/;
-    if (token !== null && regex.test(token)) {
-      // Obtenir le profil de l'utilisateur authentifié ✅
-      dispatch(fetchOrUpdateProfile(token));
+    if (login.token !== null && regex.test(login.token)) {
+      dispatch(fetchOrUpdateProfile(login.token));
     }
-  }, [dispatch, token]);
+  }, [dispatch, login.token]);
 
-  // 3️⃣ Rediriger l'utilisateur connecté
+  // 3️⃣ Rediriger l'utilisateur connecté ✅
   useEffect(() => {
-    console.log(`useEffect 3 : ${id}`);
-    if (connected) {
+    if (isConnected) {
       navigate(`/user/${id}`);
     }
-  }, [connected, id, navigate]);
+  }, [isConnected, id, navigate]);
+
+  // 4️⃣ Prévenir que l'authentification a échoué ⛔
+  if (login.status === 'rejected') {
+    updateMessageValidation(
+      inputPassword.current,
+      'Le compte utilisateur et le mot de passe ne correspondent pas'
+    );
+  }
 
   /**
-   *
+   * Valider le formulaire en testant les contraintes de ses champs
    * @param {*} e
-   * @returns
+   * @returns {void}
    */
   const signUser = (e) => {
     // Rester sur le formulaire
@@ -174,14 +175,18 @@ function Signin() {
      * @description est-ce que les champs de formulaire respectent leurs contraintes de validité ?
      */
     const valid = checkValidity();
-    setFormValidator(false);
     if (!valid) {
       // ⛔
-      // inputPassword.current.focus()
+      // inputPassword.current.focus();
       return;
     } else {
-      // ✅
-      setFormValidator(true);
+      /**
+       * @type {string}
+       * @description Le mot de passe
+       */
+      const userPassword = inputPassword.current?.value;
+      // 1️⃣ Obtenir le jeton d'authentification 🤞
+      dispatch(fetchOrUpdateToken(userName, userPassword));
     }
   };
 
@@ -204,7 +209,6 @@ function Signin() {
             onChange={(e) => {
               setUserName(e.target.value);
             }}
-            ref={inputName}
           />
         </div>
         <div className="input-wrapper formData">
