@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -6,7 +6,7 @@ import { faUserCircle, faSignOut } from '@fortawesome/free-solid-svg-icons';
 import logo from '../../assets/img/argentBankLogo.png';
 import './header.css';
 import { deconnect } from '../../features/token';
-import { forget } from '../../features/profile';
+import { fetchOrUpdateProfile, forget } from '../../features/profile';
 import {
   connectedSelector,
   userProfileSelector,
@@ -20,14 +20,7 @@ import {
 function Header() {
   const dispatch = useDispatch();
   /**
-   * @type {boolean}
-   * @description l'utilisateur est-il connecté et authentifié ?
-   */
-  const isConnected = useSelector(connectedSelector);
-  const { firstName } = useSelector((state) => userProfileSelector(state));
-  /**
-   * @type {string}
-   * @description le jeton d'authentification de l'utilisateur stocké dans le state global
+   * @typedef {string} token le jeton d'authentification de l'utilisateur stocké dans le state global
    */
   const { token } = useSelector(tokenSelector);
   /**
@@ -35,17 +28,37 @@ function Header() {
    * @description l'identifiant de l'utilisateur stocké dans le state global
    */
   const id = useSelector(userIdSelector);
+  /**
+   * @typedef {string} firstName le prénom de l'utilisateur stocké dans le state global
+   */
+  const { firstName } = useSelector((state) => userProfileSelector(state));
+  /**
+   * @type {boolean}
+   * @description l'utilisateur est-il connecté et authentifié ?
+   */
+  const isConnected = useSelector(connectedSelector);
+
+  // Obtenir le profil de l'utilisateur à partir du jeton ✅
+  useEffect(() => {
+    const regex = /^[\w-]+\.[\w-]+\.[\w-]+$/;
+    if (token !== null && regex.test(token)) {
+      dispatch(fetchOrUpdateProfile(token));
+    }
+  }, [dispatch, token]);
 
   /**
    * Oublier les informations de l'utilisateur connecté et
-   * déconnecter l'utilisateur en enlevant du state global son jeton
+   * déconnecter l'utilisateur en enlevant son jeton
+   * du state global et du sessionStorage 👋
+   * @param {Object} e
    * @param {string} id identifiant de l'utilisateur
    * @param {string} token jeton d'authentification de l'utilisateur
    */
-  function signOutUser(id, token) {
+  function signOutUser(e, id, token) {
     if (id !== null && token !== null) {
       dispatch(forget(id));
       dispatch(deconnect(token));
+      window.sessionStorage.removeItem('token');
     }
   }
 
@@ -57,7 +70,7 @@ function Header() {
         </Link>
         {isConnected ? (
           <div>
-            <Link to={`user/${id}`} className="main-nav-item">
+            <Link to={`/user/${id}`} className="main-nav-item">
               <i>
                 <FontAwesomeIcon icon={faUserCircle} />
               </i>
@@ -66,7 +79,7 @@ function Header() {
             <Link
               to="/"
               className="main-nav-item"
-              onClick={() => signOutUser(id, token)}
+              onClick={(e) => signOutUser(e, id, token)}
             >
               <i>
                 <FontAwesomeIcon icon={faSignOut} />
