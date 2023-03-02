@@ -4,10 +4,10 @@ import { useNavigate, Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserCircle } from '@fortawesome/free-solid-svg-icons';
 import './signin.css';
-import { fetchOrUpdateToken } from '../../features/token';
+import { fetchOrUpdateToken } from '../../features/login';
 import { fetchOrUpdateProfile } from '../../features/profile';
 import {
-  tokenSelector,
+  loginSelector,
   userIdSelector,
   connectedSelector,
 } from '../../utils/selectors';
@@ -117,7 +117,7 @@ function Signin() {
    * @property {string} status Permet de suivre l'état de la requête (void, fetching, updating, rejected)
    */
   /** @type {login} */
-  const login = useSelector(tokenSelector);
+  const login = useSelector(loginSelector);
   /**
    * @type {string}
    * @description l'identifiant de l'utilisateur stocké dans le state global

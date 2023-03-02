@@ -5,12 +5,12 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserCircle, faSignOut } from '@fortawesome/free-solid-svg-icons';
 import logo from '../../assets/img/argentBankLogo.png';
 import './header.css';
-import { deconnect } from '../../features/token';
+import { deconnect } from '../../features/login';
 import { fetchOrUpdateProfile, forget } from '../../features/profile';
 import {
   connectedSelector,
   userProfileSelector,
-  tokenSelector,
+  loginSelector,
   userIdSelector,
 } from '../../utils/selectors';
 /**
@@ -22,7 +22,7 @@ function Header() {
   /**
    * @typedef {string} token le jeton d'authentification de l'utilisateur stocké dans le state global
    */
-  const { token } = useSelector(tokenSelector);
+  const { token } = useSelector(loginSelector);
   /**
    * @type {string}
    * @description l'identifiant de l'utilisateur stocké dans le state global

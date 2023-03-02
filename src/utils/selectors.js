@@ -1,5 +1,4 @@
-// export const tokenSelector = (state) => state.login.token;
-export const tokenSelector = (state) => state.login;
+export const loginSelector = (state) => state.login;
 
 export const userIdSelector = (state) => state.profile.id;
 

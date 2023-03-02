@@ -20,7 +20,7 @@ const getSessionStorageToken = () => {
 const initialState = {
   // permet de suivre l'état de la requête
   status: getSessionStorageToken() === null ? 'void' : 'resolved',
-  // TODO: Récuperer le token depuis le session storage ou le localStorage
+  // TODO: Récuperer le token depuis le sessionStorage ou le localStorage
   token: getSessionStorageToken(),
   // l'erreur lorsque la requête échoue
   error: null,
