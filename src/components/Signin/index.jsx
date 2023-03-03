@@ -4,7 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserCircle } from '@fortawesome/free-solid-svg-icons';
 import './signin.css';
-import { fetchOrUpdateToken } from '../../features/login';
+import { fetchOrUpdateToken, remember } from '../../features/login';
 import { fetchOrUpdateProfile } from '../../features/profile';
 import {
   loginSelector,
@@ -134,10 +134,16 @@ function Signin() {
    */
   const inputPassword = useRef();
 
-  // Lors du premier chargement de formulaire, désactiver les info-bulles de l'API Validation
+  // 1️⃣ Lors du premier chargement de formulaire, désactiver les info-bulles de l'API Validation
   useEffect(() => {
+    // 💬 Neutraliser le infobulles de l'API HTML
     disableBubbleMessages();
-  }, []);
+
+    /** @type {HTMLInputElement} */
+    const input = document.querySelector('#remember-me');
+    // ☑ L'état de la case "Remember me" dépend de la présence du token dans le Web Storage
+    input.checked = login.rememberMe;
+  }, [login]);
 
   // 2️⃣ Obtenir le profil de l'utilisateur qui a obtenu un jeton ✅
   useEffect(() => {
@@ -168,6 +174,7 @@ function Signin() {
    * @returns {void}
    */
   const signUser = (e) => {
+    console.log(`${Date.now()} - signUser()`);
     // Rester sur le formulaire
     e.preventDefault();
     /**
@@ -185,10 +192,18 @@ function Signin() {
        * @description Le mot de passe
        */
       const userPassword = inputPassword.current?.value;
-      // 1️⃣ Obtenir le jeton d'authentification 🤞
+      // Obtenir le jeton d'authentification 🤞
       dispatch(fetchOrUpdateToken(userName, userPassword));
     }
   };
+
+  /**
+   * Activer ou désactiver la mémorisation du token
+   */
+  function toggleRememberMe(e) {
+    // Mémoriser l'état de la case à cocher dans le state global ☑
+    dispatch(remember(e.target.checked));
+  }
 
   return (
     <section className="sign-in-content">
@@ -223,7 +238,11 @@ function Signin() {
           />
         </div>
         <div className="input-remember formData">
-          <input type="checkbox" id="remember-me" />
+          <input
+            type="checkbox"
+            id="remember-me"
+            onClick={(e) => toggleRememberMe(e)}
+          />
           <label htmlFor="remember-me">Remember me</label>
         </div>
         <button

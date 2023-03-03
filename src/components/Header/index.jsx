@@ -58,7 +58,6 @@ function Header() {
     if (id !== null && token !== null) {
       dispatch(forget(id));
       dispatch(deconnect(token));
-      window.sessionStorage.removeItem('token');
     }
   }
 
