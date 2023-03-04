@@ -15,6 +15,14 @@ export const userProfileSelector = (state) => {
   };
 };
 
+export const userFailedSelector = (state) => {
+  return {
+    status: state.profile.status,
+    message: state.profile.message,
+    error: state.profile.error,
+  };
+};
+
 // 3️⃣ Login + Profile 👮‍♂️
 export const connectedSelector = (state) => {
   if ((state.login.token !== null) & (state.profile.id !== null)) {
@@ -22,4 +30,17 @@ export const connectedSelector = (state) => {
   } else {
     return false;
   }
+};
+
+export const userSuccessSelector = (state) => {
+  return {
+    status:
+      (state.login === 'void') & (state.profile.status === 'resolved')
+        ? 'success'
+        : 'void',
+    email: state.profile.email,
+    createdAt: state.progile.createdAt,
+    message: state.profile.message,
+    error: state.profile.error,
+  };
 };

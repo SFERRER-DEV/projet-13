@@ -11,6 +11,8 @@ const initialState = {
   createdAt: null,
   updatedAt: null,
   id: null,
+  // Le message accompagnant la réponse de la requête
+  message: null,
   // l'erreur lorsque la requête échoue
   error: null,
 };
@@ -32,9 +34,35 @@ export function fetchOrUpdateProfile(token) {
         config
       );
       const data = await response.data.body;
+      // ✅ Les informations du profil utilisateur ont été trouvées
       dispatch(resolved(data));
     } catch (error) {
+      // ⛔
       console.log(error);
+      dispatch(rejected(error.message));
+    }
+  };
+}
+
+export function createProfile(firstName, lastname, email, password) {
+  return async (dispatch, getState) => {
+    dispatch(creating());
+    try {
+      const response = await axios.post(
+        'http://localhost:3001/api/v1/user/signup',
+        {
+          email: email,
+          password: password,
+          firstName: firstName,
+          lastName: lastname,
+        }
+      );
+      // ✅ Un nouvel utilisateur a été créé
+      dispatch(resolved(response.data.body));
+      dispatch(created(response.data.message));
+    } catch (error) {
+      // ⛔
+      dispatch(failed(error.response.data.message));
       dispatch(rejected(error.message));
     }
   };
@@ -74,7 +102,10 @@ const { actions, reducer } = createSlice({
       reducer: (draft, action) => {
         if (draft.status === 'pending' || draft.status === 'updating') {
           draft.email = action.payload.email;
-          draft.id = action.payload.id;
+          if (action.payload.id !== undefined) {
+            // ⚠ la propriété id n'existe pas lors de la création d'un utilisateur
+            draft.id = action.payload.id;
+          }
           draft.firstName = action.payload.firstName;
           draft.lastName = action.payload.lastName;
           draft.createdAt = action.payload.createdAt;
@@ -97,6 +128,7 @@ const { actions, reducer } = createSlice({
     // Action forget 👋
     forget: (draft, action) => {
       if (draft.status === 'resolved' && draft.id === action.payload) {
+        // ∅ oublier les informations de profil
         draft.email = null;
         draft.id = null;
         draft.firstName = null;
@@ -108,11 +140,48 @@ const { actions, reducer } = createSlice({
       }
       return;
     },
+    // Action creating user
+    creating: (draft, action) => {
+      if (draft.status === 'void' || draft.status === 'resolved') {
+        draft.status = 'pending';
+        // ∅ effacer les informations de profil d'un essai de création précédent
+        draft.email = null;
+        draft.firstName = null;
+        draft.lastName = null;
+        draft.createdAt = null;
+        draft.updatedAt = null;
+        draft.message = null;
+        return;
+      }
+      if (draft.status === 'rejected') {
+        draft.error = null;
+        draft.status = 'pending';
+        return;
+      }
+
+      return;
+    },
+    // Action user created
+    created: (draft, action) => {
+      if (draft.status === 'resolved') {
+        draft.message = action.payload;
+        return;
+      }
+      return;
+    },
+    // Action failed to create  user
+    failed: (draft, action) => {
+      if (draft.status === 'pending') {
+        draft.message = action.payload;
+        return;
+      }
+      return;
+    },
   },
 });
 
 // Extraire les actions
-const { fetching, resolved, rejected } = actions;
+const { fetching, resolved, rejected, creating, created, failed } = actions;
 export const { forget } = actions;
 
 export default reducer;
