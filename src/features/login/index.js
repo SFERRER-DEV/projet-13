@@ -2,58 +2,51 @@ import { createSlice } from '@reduxjs/toolkit';
 import axios from 'axios';
 
 /**
- * Obtenir le token stocké dans le sessionStorage
+ * Obtenir le token mémorisé dans le sessionStorage
+ * ou mémorisé dans le localStorage
  * @returns {string|null} token d'authentification
  */
-const getSessionStorageToken = () => {
-  // Détection de la possibilité de faire un stockage local via sessionStorage
-  if (typeof sessionStorage != 'undefined') {
-    /// Récupération de la valeur du token depuis le stockage sessionStorage
-    const token = sessionStorage.getItem('token');
-    // Vérification de la présence du token
-    if (token !== null) {
-      return token;
-    }
+const getWebStorageToken = () => {
+  /**
+   * @type {string}
+   * Token d'authentification mémorisé soit dans le sessionStorage soit dans le localStorage
+   */
+  let token = null;
+  // Détection de la possibilité de faire un stockage local via sessionStorage et via localStorage
+  if (
+    typeof sessionStorage === 'undefined' ||
+    typeof localStorage === 'undefined'
+  ) {
+    //  Message d'erreur (pas de possibilité de stockage)
+    console.log('localStorage/sessionStorage non supporté(s)');
+    // 👎 Aucun token ne peut être mémorisé
     return null;
-  } else {
-    //  Message d'erreur (pas de possibilité de stockage sessionStorage)
-    console.log("sessionStorage n'est pas supporté");
   }
-};
-
-/**
- * Obtenir le token pérsistant stocké dans le localStorage
- * @returns {string|null} token d'authentification
- */
-const getLocalStorageToken = () => {
-  // Détection de la possibilité de faire un stockage local via localStorage
-  if (typeof localStorage != 'undefined') {
-    /// Récupération de la valeur du token depuis le stockage localStorage
-    const token = localStorage.getItem('token');
-    //  Vérification de la présence du token
-    if (token !== null) {
-      return token;
-    }
-    return null;
-  } else {
-    //  Message d'erreur (pas de possibilité de stockage localStorage)
-    console.log("localStorage n'est pas supporté");
+  // 1️⃣ Récupération de la valeur du token depuis le stockage sessionStorage
+  token = sessionStorage.getItem('token');
+  // Vérification de la présence du token
+  if (token !== null) {
+    // Retourner le token stocké dans le Session Storage 👍
+    return token;
   }
+  // 2️⃣ Récupération de la valeur du token depuis le stockage localStorage
+  token = localStorage.getItem('token');
+  //  Vérification de la présence du token
+  if (token !== null) {
+    // Retourner le token stocké dans le Local Storage 👍
+    return token;
+  }
+  // 👎 Aucun token n'a été trouvé
+  return null;
 };
 
 const initialState = {
   // permet de suivre l'état de la requête
-  status:
-    getLocalStorageToken() !== null || getSessionStorageToken() !== null
-      ? 'resolved'
-      : 'void',
+  status: getWebStorageToken() !== null ? 'resolved' : 'void',
   // Si le token d'authentification est dans le Web Storage alors rememberMe est activé ☑
   rememberMe: localStorage.getItem('token') !== null || false,
-  // TODO: Récupérer le token depuis le sessionStorage ou le localStorage
-  token:
-    (getLocalStorageToken() !== null) === true
-      ? getLocalStorageToken()
-      : getSessionStorageToken(),
+  // Récupérer un token mémorisé
+  token: getWebStorageToken(),
   // l'erreur lorsque la requête échoue
   error: null,
 };
@@ -144,10 +137,15 @@ const { actions, reducer } = createSlice({
     // Action deconnect 👋
     deconnect: (draft, action) => {
       if (draft.status === 'resolved' && draft.token === action.payload) {
+        // 🧹
         draft.token = null;
         draft.status = 'void';
         sessionStorage.removeItem('token');
-        localStorage.removeItem('token');
+        // ☑ Conserver ou non le token pour se reconnecter automatiquement
+        if (!draft.rememberMe) {
+          // 🧹
+          localStorage.removeItem('token');
+        }
         return;
       }
       return;
