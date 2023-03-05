@@ -29,7 +29,7 @@
 .formData[data-message]::before {
   content: attr(data-message);
   text-align: left;
-  color: #00bc78;
+  color: #42b983;
 }
 .formData[data-message-visible='true']::before {
   opacity: 1;
