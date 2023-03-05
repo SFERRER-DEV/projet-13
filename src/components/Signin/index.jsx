@@ -2,11 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { fetchOrUpdateToken, remember } from '../../features/login';
-import { fetchOrUpdateProfile } from '../../features/profile';
+import { fetchOrUpdateProfile, forget } from '../../features/profile';
 import {
   loginSelector,
   userIdSelector,
   connectedSelector,
+  userCreatedSelector,
 } from '../../utils/selectors';
 import checkValidity, { updateMessageValidation } from '../../utils/form';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -61,6 +62,22 @@ function Signin() {
    */
   const isConnected = useSelector(connectedSelector);
   /**
+   * @typedef createdUser
+   * @property {string} status Permet de suivre l'état de la requète
+   * @property {string} email Courrier électronique de l'utilisateur créé
+   * @property {Date|null} createdAt Date de création
+   * @property {string} message Message de succès ou d'échec de création de compte
+   */
+  /** @type {createdUser} */
+  const { status, email, message, createdAt } =
+    useSelector(userCreatedSelector);
+
+  /**
+   * @type {Object}
+   * @description Référence vers un élément du DOM
+   */
+  const inputUsername = useRef();
+  /**
    * @type {Object}
    * @description Référence vers un élément du DOM
    */
@@ -75,7 +92,25 @@ function Signin() {
     const input = document.querySelector('#remember-me');
     // ☑ L'état de la case "Remember me" dépend de la présence du token dans le Web Storage
     input.checked = login.rememberMe;
-  }, [login]);
+    if (status === 'void' && message !== null) {
+      // Saisir son courrier électronique
+      inputPassword.current.focus();
+    } else if (status === 'resolved' && email !== null && createdAt !== null) {
+      //  ✅ Afficher le message d'information "User successfully created"
+      inputPassword.current.parentNode.setAttribute('data-message', message);
+      inputPassword.current.parentNode.setAttribute(
+        'data-message-visible',
+        true
+      );
+      // 📝 Remplir le courrier électronique avec celui de l'inscription
+      setUserName(email);
+      inputUsername.current.value = userName;
+      // 👋 Avant la 1ere connexion il faut oublier les informations de profil de l'inscription
+      dispatch(forget(null));
+      // Saisir mot de passe
+      inputPassword.current.focus();
+    }
+  }, [login, status, message, createdAt, email, userName, dispatch]);
 
   // 2️⃣ Obtenir le profil de l'utilisateur qui a obtenu un jeton ✅
   useEffect(() => {
@@ -156,6 +191,7 @@ function Signin() {
             onChange={(e) => {
               setUserName(e.target.value);
             }}
+            ref={inputUsername}
           />
         </div>
         <div className="input-wrapper formData">

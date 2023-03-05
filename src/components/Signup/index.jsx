@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { createProfile } from '../../features/profile';
-import { userFailedSelector } from '../../utils/selectors';
+import { userCreatedSelector } from '../../utils/selectors';
 import checkValidity, { updateMessageValidation } from '../../utils/form';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserCircle } from '@fortawesome/free-solid-svg-icons';
@@ -17,9 +17,16 @@ function Signup() {
   /** @typedef {string} userName Le courrier électronique de l'utilisateur saisi dans le champ du formulaire  */
   const [userName, setUserName] = useState('');
 
-  const { status, message, error } = useSelector((state) =>
-    userFailedSelector(state)
-  );
+  /**
+   * @typedef createdUser
+   * @property {string} status Permet de suivre l'état de la requète
+   * @property {Date|null} createdAt Date de création
+   * @property {string} message Message de succès ou d'échec de création de compte
+   * @property {string|null} error Est null pour un compte créé avec succès
+   */
+  /** @type {createdUser} */
+  const { status, message, createdAt, error } =
+    useSelector(userCreatedSelector);
 
   /**
    * @type {Object}
@@ -47,10 +54,13 @@ function Signup() {
     if (status === 'rejected' && error !== null) {
       inputUsername.current.focus();
       inputUsername.current.setCustomValidity(message);
-      // Marquer le champ en erreur avec le message obtenu depuis la réponse du backend
+      // ⛔ Marquer le champ en erreur avec le message de la réponse du backend, et rester sur le signup
       updateMessageValidation(inputUsername.current, message);
+    } else if (status === 'resolved' && error === null && createdAt !== null) {
+      // ✅ Rediriger l'utilisateur créé avec succès vers signin
+      navigate('/signin');
     }
-  }, [status, message, error]);
+  }, [status, message, error, createdAt, navigate]);
   /**
    * Valider le formulaire en testant les contraintes de ses champs
    * @param {Object} e L'objet évènement

@@ -6,13 +6,17 @@
 export const updateMessageValidation = (field, message) => {
   /** @type {HTMLDivElement} */
   const formData = field.parentNode;
+  if (formData === null || formData === undefined) {
+    return;
+  }
   if (formData.classList.contains('formData')) {
     formData.setAttribute('data-error', message);
     formData.setAttribute('data-error-visible', true);
   }
 };
 /**
- * Remise à blanc des erreurs de validation d'un champ
+ * Remise à blanc des erreurs de validation
+ * et des messages informatif d'un champ de formulaire
  * @param {HTMLInputElement} field
  */
 const resetValidation = (field) => {
@@ -21,6 +25,8 @@ const resetValidation = (field) => {
   if (formData.classList.contains('formData')) {
     formData.setAttribute('data-error', '');
     formData.setAttribute('data-error-visible', false);
+    formData.setAttribute('data-message', '');
+    formData.setAttribute('data-message-visible', false);
     field.setCustomValidity('');
   }
 };

@@ -15,9 +15,11 @@ export const userProfileSelector = (state) => {
   };
 };
 
-export const userFailedSelector = (state) => {
+export const userCreatedSelector = (state) => {
   return {
     status: state.profile.status,
+    email: state.profile.email,
+    createdAt: state.profile.createdAt,
     message: state.profile.message,
     error: state.profile.error,
   };
@@ -30,17 +32,4 @@ export const connectedSelector = (state) => {
   } else {
     return false;
   }
-};
-
-export const userSuccessSelector = (state) => {
-  return {
-    status:
-      (state.login === 'void') & (state.profile.status === 'resolved')
-        ? 'success'
-        : 'void',
-    email: state.profile.email,
-    createdAt: state.progile.createdAt,
-    message: state.profile.message,
-    error: state.profile.error,
-  };
 };

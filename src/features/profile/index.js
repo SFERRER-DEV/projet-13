@@ -127,6 +127,10 @@ const { actions, reducer } = createSlice({
     },
     // Action forget 👋
     forget: (draft, action) => {
+      // Vérification id 👮‍♂️
+      if (action.payload !== null && draft.id !== action.payload) {
+        return;
+      }
       if (draft.status === 'resolved' && draft.id === action.payload) {
         // ∅ oublier les informations de profil
         draft.email = null;
@@ -135,6 +139,7 @@ const { actions, reducer } = createSlice({
         draft.lastName = null;
         draft.createdAt = null;
         draft.updatedAt = null;
+        draft.message = null;
         draft.status = 'void';
         return;
       }

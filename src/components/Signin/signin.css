@@ -1,13 +1,16 @@
-/*  Montrer les erreurs de validation >>> */
-.formData[data-error]::after {
-  content: attr(data-error);
+.formData[data-error]::after,
+.formData[data-message]::before {
   font-size: 0.85em;
-  color: #e54858;
   display: block;
   margin: 0.25em;
-  text-align: right;
   line-height: 1em;
   opacity: 0;
+}
+/*  Montrer erreur de validation >>> */
+.formData[data-error]::after {
+  content: attr(data-error);
+  text-align: right;
+  color: #e54858;
 }
 .formData[data-error-visible='true']::after {
   opacity: 1;
@@ -21,4 +24,17 @@
 .formData[data-error-visible='false'] .text-control {
   border: none;
 }
-/* <<<  Montrer les erreurs de validation */
+/* <<<  Montrer erreur de validation */
+/*  Montrer message informatif >>> */
+.formData[data-message]::before {
+  content: attr(data-message);
+  text-align: left;
+  color: #00bc78;
+}
+.formData[data-message-visible='true']::before {
+  opacity: 1;
+}
+.formData[data-message-visible='false']::before {
+  opacity: 0;
+}
+/* <<< Montrer message informatif */
