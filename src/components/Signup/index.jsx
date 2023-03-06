@@ -94,7 +94,7 @@ function Signup() {
        * @description Le mot de passe
        */
       const userPassword = inputPassword.current?.value;
-      //
+      // 🤞 Créer le profile du nouvel utilisateur avec son mot de passe
       dispatch(
         createProfile(userFirstname, userLastname, userName, userPassword)
       );

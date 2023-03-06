@@ -12,7 +12,6 @@ import {
 import checkValidity, { updateMessageValidation } from '../../utils/form';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserCircle } from '@fortawesome/free-solid-svg-icons';
-import './signin.css';
 
 /**
  * Neutraliser les info-bulles des contraintes de validation
