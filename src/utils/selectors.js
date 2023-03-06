@@ -6,6 +6,7 @@ export const userIdSelector = (state) => state.profile.id;
 
 export const userProfileSelector = (state) => {
   return {
+    status: state.profile.status,
     email: state.profile.email,
     id: state.profile.id,
     firstName: state.profile.firstName,
