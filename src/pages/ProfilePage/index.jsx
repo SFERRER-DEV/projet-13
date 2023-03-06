@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { userProfileSelector } from '../../utils/selectors';
 import { useAuthentication } from '../../utils/hooks';
@@ -34,6 +34,7 @@ const LoaderWrapper = styled.div`
  * @returns {JSX.Element} La page User
  */
 function ProfilePage() {
+  const dispatch = useDispatch();
   // 👮‍♂️ Vérifier que l'utilisateur qui accède à la page est connecté, sinon il sera redirigé par ce hook 🚨
   useAuthentication();
   /**
@@ -42,29 +43,26 @@ function ProfilePage() {
    * @property {string} lastName Nom de famille de l'utilisateur
    */
   /** @type {profile} */
-  const { firstName, lastName, status } = useSelector((state) =>
+  const { firstName, lastName, status, error, message } = useSelector((state) =>
     userProfileSelector(state)
   );
 
   const [collapse, setCollapse] = useState(false);
 
   /**
-   * Valider le formulaire en testant les contraintes de ses champs
+   * Montrer le formulaire pour éditer le profil
+   * et cacher le patronyme de bienvenue
    * @param {*} e
    * @returns {void}
    */
-  const editProfile = (e) => {
-    //
-    setCollapse(!collapse);
+  const showEditName = (e) => {
+    // Cacher le patronyme
+    setCollapse(true);
   };
 
   /** @type {boolean} Est-ce que les données asynchrones sont maintenant disponibles ?*/
   const isLoading =
     status === 'void' || status === 'pending' || status === 'updating';
-
-  // useEffect(() => {
-  //   console.log(`editProfile - ${collapse}`);
-  // }, [collapse]);
 
   return (
     <main className="main bg-dark">
@@ -80,7 +78,7 @@ function ProfilePage() {
               <p>
                 {firstName} {lastName} !
               </p>
-              <button className="edit-button" onClick={(e) => editProfile(e)}>
+              <button className="edit-button" onClick={(e) => showEditName(e)}>
                 Edit Name
               </button>
             </Container>

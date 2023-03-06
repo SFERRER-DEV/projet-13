@@ -46,6 +46,7 @@ export function fetchOrUpdateProfile(token) {
 
 export function createProfile(firstName, lastname, email, password) {
   return async (dispatch, getState) => {
+    // Régler le statut de départ 🏁
     dispatch(creating());
     try {
       const response = await axios.post(
@@ -59,10 +60,38 @@ export function createProfile(firstName, lastname, email, password) {
       );
       // ✅ Un nouvel utilisateur a été créé
       dispatch(resolved(response.data.body));
-      dispatch(created(response.data.message));
+      dispatch(createdOrUpdated(response.data.message));
     } catch (error) {
       // ⛔
       dispatch(failed(error.response.data.message));
+      dispatch(rejected(error.message));
+    }
+  };
+}
+
+export function updateProfile(token, firstName, lastName) {
+  return async (dispatch, getState) => {
+    // Régler le statut de départ 🏁
+    dispatch(fetching());
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+    try {
+      const response = await axios.put(
+        'http://localhost:3001/api/v1/user/profile',
+        {
+          firstName: firstName,
+          lastName: lastName,
+        },
+        config
+      );
+      // ✅ le profil utilisateur a été mis à jour
+      dispatch(resolved(response.data.body));
+      dispatch(createdOrUpdated(response.data.message));
+    } catch (error) {
+      // ⛔
       dispatch(rejected(error.message));
     }
   };
@@ -166,8 +195,8 @@ const { actions, reducer } = createSlice({
 
       return;
     },
-    // Action user created
-    created: (draft, action) => {
+    // Action user created:
+    createdOrUpdated: (draft, action) => {
       if (draft.status === 'resolved') {
         draft.message = action.payload;
         return;
@@ -182,11 +211,24 @@ const { actions, reducer } = createSlice({
       }
       return;
     },
+    // Action clean informative message
+    cleanMessage: (draft, action) => {
+      if (
+        draft.message !== null &&
+        draft.message !== '' &&
+        draft.status === 'resolved'
+      ) {
+        draft.message = null;
+        return;
+      }
+      return;
+    },
   },
 });
 
 // Extraire les actions
-const { fetching, resolved, rejected, creating, created, failed } = actions;
-export const { forget } = actions;
+const { fetching, resolved, rejected, creating, createdOrUpdated, failed } =
+  actions;
+export const { forget, cleanMessage } = actions;
 
 export default reducer;

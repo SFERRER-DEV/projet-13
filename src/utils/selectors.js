@@ -13,6 +13,8 @@ export const userProfileSelector = (state) => {
     lastName: state.profile.lastName,
     createdAt: state.profile.createdAt,
     updatedAt: state.profile.updatedAt,
+    message: state.profile.message,
+    error: state.profile.error,
   };
 };
 
