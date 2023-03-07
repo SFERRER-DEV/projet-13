@@ -69,7 +69,7 @@ function Header() {
         </Link>
         {isConnected ? (
           <div>
-            <Link to={`/user/${id}`} className="main-nav-item">
+            <Link to={`/profile`} className="main-nav-item">
               <i>
                 <FontAwesomeIcon icon={faUserCircle} />
               </i>

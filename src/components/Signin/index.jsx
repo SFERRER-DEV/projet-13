@@ -122,7 +122,7 @@ function Signin() {
   // 3️⃣ Rediriger l'utilisateur connecté ✅
   useEffect(() => {
     if (isConnected) {
-      navigate(`/user/${id}`);
+      navigate(`/profile`);
     }
   }, [isConnected, id, navigate]);
 
