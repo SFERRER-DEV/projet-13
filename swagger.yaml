@@ -1,0 +1,467 @@
+swagger: '2.0'
+info:
+  title: "Bank Argent API Conception"
+  description: "Proposal for the development of the transaction API"
+  version: '1.0.0'
+  termsOfService: 'http://swagger.io/terms/'
+host: 'localhost:3001'
+basePath: '/api/v1'
+schemes:
+  - 'http'
+paths:
+# Get all bank accounts for a given user
+  /accounts/findByUser:
+    get:
+      tags:
+      - "Module of Bank Accounts"
+      summary: "Get a list of all of a user's bank accounts"
+      description: "API pour comptes bancaires"
+      operationId: 'listaccounts'
+      produces:
+        - 'application/json'
+      parameters:
+      - name: 'Authorization'
+        in: 'header'
+        type: 'string'
+        description: "Attach Bearer JWT (authentication token)"
+        required: true
+      - name: 'userId'
+        in: 'query'
+        type: 'string'
+        description: "User Id"
+        required: true
+      responses:
+        '200':
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/ApiAccountsResponse"
+        '400':
+          description: "Invalid User ID supplied"
+        '500':
+          description: "Internal Server Error."
+      security:
+      - Bearer: []
+# Get a bank account
+  /accounts/{accountId}:
+    get:
+      tags:
+      - "Module of Bank Accounts"
+      summary: "Return a user's bank account by ID"
+      description: "API for bank accounts"
+      operationId: 'getaccountById'
+      produces:
+        - 'application/json'
+      parameters:
+      - name: 'Authorization'
+        in: 'header'
+        type: 'string'
+        description: "Attach Bearer JWT (authentication token)"
+        required: true
+      - name: 'accountId'
+        in: 'path'
+        type: 'integer'
+        format: 'int64'
+        description: "Bank account ID"
+        required: true
+      responses:
+        '200':
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/ApiAccountResponse"
+        '400':
+          description: "Invalid ID supplied"
+        '500':
+          description: "Internal Server Error."
+      security:
+      - Bearer: []
+# Get all transactions for a given account
+  /accounts/{accountId}/transactions:
+    get:
+      tags:
+      - "Module of Transactions"
+      summary: "Get a list of all transactions for a user's account"
+      operationId: 'listTransactions'
+      produces:
+        - 'application/json'
+      parameters:
+      - name: 'Authorization'
+        in: 'header'
+        type: 'string'
+        description: "Attach Bearer JWT (authentication token)"
+        required: true
+      - name: 'accountId'
+        in: 'path'
+        type: 'integer'
+        format: 'int64'
+        description: "Bank account ID"
+        required: true
+      responses:
+        '200':
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/ApiTransactionsResponse"
+        '400':
+          description: "Invalid User ID supplied"
+        '500':
+          description: "Internal Server Error."
+      security:
+      - Bearer: []
+# Get all transactions for a user's account for a period
+  /account/{accountId}/transactions/findByDates:
+    get:
+      tags:
+      - "Module of Transactions"
+      summary: "Get the list of transactions between two dates for a user's bank account"
+      description: "API pour Transactions"
+      operationId: 'findByDates'
+      produces:
+      - 'application/json'
+      parameters:
+      - name: 'Authorization'
+        in: 'header'
+        type: 'string'
+        description: "Attach Bearer JWT (authentication token)"
+        required: true
+      - name: 'accountId'
+        in: 'path'
+        type: 'integer'
+        format: 'int64'
+        description: "Bank account ID"
+        required: true
+      - name: 'firstDate'
+        in: 'query'
+        type: 'string'
+        format: 'date'
+        description: "Start date"
+        required: true
+      - name: 'lastDate'
+        in: 'query'
+        type: 'string'
+        format: 'date'
+        description: "End date"
+        required: true
+      responses:
+        '200':
+          description: "Successfully get list od user's transactions"
+          schema:
+            $ref: "#/definitions/ApiTransactionsResponse"
+        '400':
+            description: "Invalid User ID supplied"
+        '500':
+          description: "Internal Server Error."
+      security:
+      - Bearer: []
+# Module of a Transaction
+  /account/{accountId}/transaction:
+## Create a transaction
+    post:
+      tags:
+      - "Module of a Transaction"
+      summary: "Create a transaction with data"
+      description: "API for Transaction"
+      operationId: 'addTransaction'
+      produces:
+      - 'application/json'
+      parameters:
+      - name: 'Authorization'
+        in: 'header'
+        type: 'string'
+        description: "Attach Bearer JWT (authentication token)"
+        required: true
+      - name: 'accountId'
+        in: 'path'
+        type: 'integer'
+        format: 'int64'
+        description: "Bank account ID"
+        required: true
+      - name: "body"
+        in: "body"
+        description: "Update Transaction attributes"
+        required: true
+        schema:
+          $ref: '#/definitions/Transaction'
+      responses:
+        '200':
+          description: "Transaction add successully"
+          schema:
+            $ref: '#/definitions/ApiTransactionResponse'
+        '400':
+          description: "Invalid input"
+        '500':
+          description: "Internal Server Error"
+      security:
+      - Bearer: []
+## Update a transaction with data
+    put:
+      tags:
+      - "Module of a Transaction"
+      summary: "Update an existing transaction"
+      description: "API for Transaction"
+      operationId: 'updateTransaction'
+      consumes:
+      - 'application/json'
+      produces:
+      - 'application/json'
+      parameters:
+      - name: 'Authorization'
+        in: 'header'
+        type: 'string'
+        description: "Attach Bearer JWT (authentication token)"
+        required: true
+      - name: 'accountId'
+        in: 'path'
+        type: 'integer'
+        format: 'int64'
+        description: "Bank account ID"
+        required: true
+      - name: 'body'
+        in: 'body'
+        description: "The transaction object"
+        required: true
+        schema:
+          $ref: "#/definitions/ApiTransactionResponse"
+      responses:
+        '200':
+          description: Successfully updated transaction data
+          schema:
+            $ref: '#/definitions/Transaction'
+        '400':
+          description: "Invalid Transaction"
+        "404":
+          description: "Transaction not found"
+        "405":
+          description: "Validation exception"
+        '500':
+          description: " Internal Server Error"
+      security:
+      - Bearer: []
+## Get a transaction
+  /account/{accountId}/transaction/{transactionId}:
+    get:
+      tags:
+      - "Module of a Transaction"
+      summary: "Returns a transaction by ID"
+      description: "API for Transaction"
+      operationId: 'getTransactiontById'
+      produces:
+      - 'application/json'
+      parameters:
+      - name: 'Authorization'
+        in: 'header'
+        type: 'string'
+        description: "Attach Bearer JWT (authentication token)"
+        required: true
+      - name: 'accountId'
+        in: 'path'
+        type: 'integer'
+        format: 'int64'
+        description: "Bank account ID"
+        required: true
+      - name: 'transactionId'
+        in: 'path'
+        description: "Transaction ID"
+        required: true
+        type: 'integer'
+        format: 'int64'
+      responses:
+        '200':
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/ApiTransactionResponse"
+        '400':
+          description: "Invalid ID supplied"
+        '404':
+          description: "Transaction not found"
+      security:
+      - Bearer: []
+## Update a transaction with user data
+    post:
+      tags:
+      - "Module of a Transaction"
+      summary: "Update a transaction with user information"
+      description: "API for Transaction"
+      operationId: 'updateTransactionWithForm'
+      consumes:
+      - 'application/x-www-form-urlencoded'
+      produces:
+      - 'application/json'
+      parameters:
+      - name: 'Authorization'
+        in: 'header'
+        type: 'string'
+        description: "Attach Bearer JWT (authentication token)"
+        required: true
+      - name: 'transactionId'
+        in: 'path'
+        description: "Transaction ID"
+        required: true
+        type: 'integer'
+        format: 'int64'
+      - name: 'accountId'
+        in: 'path'
+        type: 'integer'
+        format: 'int64'
+        description: "Bank account ID"
+        required: true
+      - name: 'body'
+        in: 'body'
+        description: "Update a transaction's user fields"
+        required: true
+        schema:
+          $ref: "#/definitions/UserTransaction"
+      responses:
+        '200':
+          description: "Transaction modified successully"
+          schema:
+            $ref: '#/definitions/ApiUserTransactionResponse'
+        '400':
+          description: "Invalid ID Transaction supplied"
+        '404':
+          description: "Transaction not found"
+        '500':
+          description: "Internal Server Error"
+      security:
+      - Bearer: []
+## Delete a transaction
+    delete:
+      tags:
+      - "Module of a Transaction"
+      summary: "Delete a transaction"
+      description: "API for Transaction"
+      operationId: 'deleteTransaction'
+      produces:
+      - 'application/json'
+      parameters:
+      - name: 'Authorization'
+        in: 'header'
+        type: 'string'
+        description: "Attach Bearer JWT (authentication token)"
+        required: true
+      - name: 'accountId'
+        in: 'path'
+        type: 'integer'
+        format: 'int64'
+        description: "Bank account ID"
+        required: true
+      - name: 'transactionId'
+        in: 'path'
+        description: "Transaction ID"
+        required: true
+        type: 'integer'
+        format: 'int64'
+      responses:
+        '400':
+          description: "Invalid ID supplied"
+        '404':
+          description: "Transaction not found"
+      security:
+      - Bearer: []
+#
+securityDefinitions:
+  Bearer:
+    type: 'apiKey'
+    name: 'Authorization'
+    in: 'header'
+#
+definitions:
+  account:
+    type: 'object'
+    properties:
+      idAccount:
+        type: 'integer'
+        format: 'int64'
+        description : "Primary key"
+      title:
+        type: 'string'
+        example: "Argent Bank Checking (x8349)"
+      description:
+        type: 'string'
+        example: "Available Balance"
+  Transaction:
+    type: 'object'
+    properties:
+      idTransaction:
+        type: 'integer'
+        format: 'int64'
+        description : "Primary key"
+      idAccount:
+        type: 'integer'
+        format: 'int64'
+        description : "Foreign key"
+      amount:
+        type: 'number'
+        format: 'double'
+      dateTransaction:
+        type: 'string'
+        format: 'date-time'
+      typeTransaction:
+        type: 'string'
+        description: "Transaction Type"
+        example: "Electronic"
+      description:
+        type: 'string'
+        example: "Golden Sun Bakery"
+      category:
+        type: 'string'
+        example: "food"
+      notes:
+        type: 'string'
+        description: "User notes add"
+  UserTransaction:
+    type: 'object'
+    properties:
+      category:
+        type: 'string'
+        example: "food"
+      notes:
+        type: 'string'
+        description: "User notes add"
+  ApiAccountResponse:
+    type: object
+    properties:
+      status:
+        type: integer
+      message:
+        type: string
+      body:
+        $ref: '#/definitions/account'
+  ApiAccountsResponse:
+    type: object
+    properties:
+      status:
+        type: integer
+      message:
+        type: string
+      body:
+        type: 'array'
+        items:
+          $ref: '#/definitions/account'
+  ApiTransactionResponse:
+    type: object
+    properties:
+      status:
+        type: integer
+      message:
+        type: string
+      body:
+        $ref: '#/definitions/Transaction'
+  ApiTransactionsResponse:
+    type: object
+    properties:
+      status:
+        type: integer
+      message:
+        type: string
+      body:
+        type: 'array'
+        items:
+          $ref: '#/definitions/Transaction'
+  ApiUserTransactionResponse:
+    type: object
+    properties:
+      status:
+        type: integer
+      message:
+        type: string
+      body:
+        $ref: '#/definitions/UserTransaction'
