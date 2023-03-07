@@ -3,9 +3,11 @@ import { useSelector, useDispatch } from 'react-redux';
 import { userProfileSelector } from '../../utils/selectors';
 import { useAuthentication } from '../../utils/hooks';
 import Profile from '../../components/Profile';
+import Account from '../../components/Account';
 import { Loader } from '../../utils/style/Atoms';
 import styled from 'styled-components';
-import './profilepage.css';
+import { accountsList } from './accounts';
+/** @typedef {import('./accounts').account} account Raccourci pour importer un type */
 
 /** @type {Object} Le conteneur pour afficher le profil utilisateur est une balise `<div>` */
 const Container = styled.div`
@@ -13,8 +15,8 @@ const Container = styled.div`
   flex-direction: column;
   align-items: center;
   > p {
-    margin-block-start: 0.25em;
-    margin-block-end: 0.25em;
+    margin-block-start: 0;
+    margin-block-end: 0.83em;
     font-size: 1.25em;
     font-weight: bold;
     width: 100%;
@@ -91,6 +93,17 @@ function ProfilePage() {
           </React.Fragment>
         )}
       </section>
+      <h2 className="sr-only">Accounts</h2>
+      {accountsList.map(
+        (/** @type {account} */ { title, description, amount }, index) => (
+          <Account
+            key={`account-${1000 + index}`}
+            title={title}
+            amount={amount}
+            description={description}
+          />
+        )
+      )}
     </main>
   );
 }
