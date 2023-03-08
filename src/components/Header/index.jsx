@@ -1,10 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserCircle, faSignOut } from '@fortawesome/free-solid-svg-icons';
 import logo from '../../assets/img/argentBankLogo.png';
-import './header.css';
+import styled from 'styled-components';
 import { deconnect } from '../../features/login';
 import { fetchOrUpdateProfile, forget } from '../../features/profile';
 import {
@@ -13,12 +13,33 @@ import {
   loginSelector,
   userIdSelector,
 } from '../../utils/selectors';
+import { Loader } from '../../utils/style/Atoms';
+
+/** @type {Object} Conteneur d'icône avec une marge dans une balise`<di>` */
+const Icon = styled.i`
+  margin: 0 0.5em;
+`;
+
+const LoaderWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  width: 20em;
+`;
+
+const Container = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  width: 20em;
+`;
+
 /**
  * @description L'entête
  * @returns {JSX.Element} Header
  */
 function Header() {
   const dispatch = useDispatch();
+
   /**
    * @typedef {string} token le jeton d'authentification de l'utilisateur stocké dans le state global
    */
@@ -31,20 +52,25 @@ function Header() {
   /**
    * @typedef {string} firstName le prénom de l'utilisateur stocké dans le state global
    */
-  const { firstName } = useSelector((state) => userProfileSelector(state));
+  const { firstName, status } = useSelector((state) =>
+    userProfileSelector(state)
+  );
+
   /**
    * @type {boolean}
    * @description l'utilisateur est-il connecté et authentifié ?
    */
   const isConnected = useSelector(connectedSelector);
+  /** @type {boolean} Est-ce que les données asynchrones sont maintenant disponibles ? */
+  const isLoading = status === 'pending' || status === 'updating';
 
-  // Obtenir le profil de l'utilisateur à partir du jeton ✅
+  // Obtenir le profil de l'utilisateur sur l'API à partir du jeton
   useEffect(() => {
     const regex = /^[\w-]+\.[\w-]+\.[\w-]+$/;
-    if (token !== null && regex.test(token)) {
+    if (token !== null && regex.test(token) && id === null) {
       dispatch(fetchOrUpdateProfile(token));
     }
-  }, [dispatch, token]);
+  }, [token, id, dispatch]);
 
   /**
    * Oublier les informations de l'utilisateur connecté et
@@ -67,12 +93,16 @@ function Header() {
         <Link to="/" className="main-nav-logo">
           <img className="main-nav-logo-image" src={logo} alt="logo" />
         </Link>
-        {isConnected ? (
-          <div>
+        {isLoading ? (
+          <LoaderWrapper>
+            <Loader />
+          </LoaderWrapper>
+        ) : isConnected ? (
+          <Container>
             <Link to={`/profile`} className="main-nav-item">
-              <i>
+              <Icon>
                 <FontAwesomeIcon icon={faUserCircle} />
-              </i>
+              </Icon>
               {firstName}
             </Link>
             <Link
@@ -80,19 +110,21 @@ function Header() {
               className="main-nav-item"
               onClick={(e) => signOutUser(e, id, token)}
             >
-              <i>
+              <Icon>
                 <FontAwesomeIcon icon={faSignOut} />
-              </i>
+              </Icon>
               Sign Out
             </Link>
-          </div>
+          </Container>
         ) : (
-          <Link to="/signin" className="main-nav-item">
-            <i>
-              <FontAwesomeIcon icon={faUserCircle} />
-            </i>
-            Sign In
-          </Link>
+          <Container>
+            <Link to="/signin" className="main-nav-item">
+              <Icon>
+                <FontAwesomeIcon icon={faUserCircle} />
+              </Icon>
+              Sign In
+            </Link>
+          </Container>
         )}
       </nav>
     </header>

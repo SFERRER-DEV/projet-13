@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { userProfileSelector } from '../../utils/selectors';
 import { useAuthentication } from '../../utils/hooks';
 import Profile from '../../components/Profile';
@@ -28,6 +28,7 @@ const Container = styled.div`
 
 const LoaderWrapper = styled.div`
   display: flex;
+  padding-top: 1em;
   justify-content: center;
 `;
 
@@ -36,18 +37,18 @@ const LoaderWrapper = styled.div`
  * @returns {JSX.Element} La page User
  */
 function ProfilePage() {
-  const dispatch = useDispatch();
-  // 👮‍♂️ Vérifier que l'utilisateur qui accède à la page est connecté, sinon il sera redirigé par ce hook 🚨
-  useAuthentication();
   /**
    * @typedef profile
    * @property {string} firstName Prénom de l'utilisateur stocké dans le state global
    * @property {string} lastName Nom de famille de l'utilisateur
    */
   /** @type {profile} */
-  const { firstName, lastName, status, error, message } = useSelector((state) =>
+  const { firstName, lastName, status } = useSelector((state) =>
     userProfileSelector(state)
   );
+
+  // 👮‍♂️ Vérifier que l'utilisateur qui accède à la page est connecté, sinon il sera redirigé par ce hook 🚨
+  useAuthentication(status);
 
   const [collapse, setCollapse] = useState(false);
 
@@ -69,13 +70,13 @@ function ProfilePage() {
   return (
     <main className="main bg-dark">
       <section className="header">
-        <h1>Welcome back</h1>
         {isLoading ? (
           <LoaderWrapper>
             <Loader />
           </LoaderWrapper>
         ) : (
           <React.Fragment>
+            <h1>Welcome back</h1>
             <Container collapse={collapse}>
               <p>
                 {firstName} {lastName} !
@@ -93,16 +94,24 @@ function ProfilePage() {
           </React.Fragment>
         )}
       </section>
-      <h2 className="sr-only">Accounts</h2>
-      {accountsList.map(
-        (/** @type {account} */ { title, description, amount }, index) => (
-          <Account
-            key={`account-${1000 + index}`}
-            title={title}
-            amount={amount}
-            description={description}
-          />
-        )
+      {isLoading ? (
+        <LoaderWrapper>
+          <Loader />
+        </LoaderWrapper>
+      ) : (
+        <section>
+          <h2 className="sr-only">Accounts</h2>
+          {accountsList.map(
+            (/** @type {account}*/ { title, description, amount }, index) => (
+              <Account
+                key={`account-${1000 + index}`}
+                title={title}
+                amount={amount}
+                description={description}
+              />
+            )
+          )}
+        </section>
       )}
     </main>
   );

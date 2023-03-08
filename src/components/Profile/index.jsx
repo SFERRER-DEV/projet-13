@@ -42,7 +42,7 @@ function Profile(props) {
    * @typedef Props
    * @property {string} firstName Prénom utilisateur obtenu depuis les props
    * @property {string} lastName Nom de famille utilisateur obtenu depuis les props
-   * @property {boolean} collapse Définir si le formulaire pour éditer le profile est visible
+   * @property {boolean} collapse Définir si le formulaire pour éditer le profil est visible
    * @property {function} setCollapse
    */
   /** @type {Props} */
@@ -57,15 +57,16 @@ function Profile(props) {
     /** @type {seconds} */
     seconds,
     setSeconds,
-  ] = useState(0); // 3s
+  ] = useState(1); // 1s
   /**
    * @typedef {string} token le jeton d'authentification de l'utilisateur stocké dans le state global
    */
   const { token } = useSelector(loginSelector);
   /**
    * @typedef profile
-   * @property {Object} updatedAt Datetime de mise à jour du champ en base de données
    * @property {string} status Permet de suivre l'état de la requête
+   * @property {string} message Message informatif de succès
+   * @property {string} error Message d'erreur
    */
   /** @type {profile} */
   const { status, message, error } = useSelector((state) =>
