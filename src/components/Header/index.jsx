@@ -8,6 +8,7 @@ import styled from 'styled-components';
 import { deconnect } from '../../features/login';
 import { fetchOrUpdateProfile, forget } from '../../features/profile';
 import {
+  hasToken,
   connectedSelector,
   userProfileSelector,
   loginSelector,
@@ -40,10 +41,13 @@ const Container = styled.div`
 function Header() {
   const dispatch = useDispatch();
 
+  /** @type {boolean} Est-ce que l'utilisateur a obtenu un token valide ? */
+  const authenticated = useSelector(hasToken);
   /**
-   * @typedef {string} token le jeton d'authentification de l'utilisateur stocké dans le state global
+   * @type {string} token
+   * @description Jeton d'authentification de l'utilisateur stocké dans le state global
    */
-  const { token } = useSelector(loginSelector);
+  const token = useSelector((state) => loginSelector(state).token);
   /**
    * @type {string}
    * @description l'identifiant de l'utilisateur stocké dans le state global
@@ -64,13 +68,13 @@ function Header() {
   /** @type {boolean} Est-ce que les données asynchrones sont maintenant disponibles ? */
   const isLoading = status === 'pending' || status === 'updating';
 
-  // Obtenir le profil de l'utilisateur sur l'API à partir du jeton
+  // 🧐 Obtenir le profil de l'utilisateur
   useEffect(() => {
-    const regex = /^[\w-]+\.[\w-]+\.[\w-]+$/;
-    if (token !== null && regex.test(token) && id === null) {
+    if (authenticated) {
+      // Appeler l'API avec un jeton valide
       dispatch(fetchOrUpdateProfile(token));
     }
-  }, [token, id, dispatch]);
+  }, [authenticated, token, dispatch]);
 
   /**
    * Oublier les informations de l'utilisateur connecté et

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { connectedSelector } from '../../utils/selectors';
+import { hasToken } from '../../utils/selectors';
 import { useNavigate } from 'react-router-dom';
 
 /**
@@ -11,28 +11,23 @@ import { useNavigate } from 'react-router-dom';
  */
 export function useAuthentication(status) {
   const navigate = useNavigate();
-  /**
-   * @type {boolean}
-   * @description Est-ce que l'utilisateur est connecté ? (A-t-il un jeton et id qui ont été stockés dans le state global)
-   */
-  const isConnected = useSelector(connectedSelector);
 
-  console.log(`${Date.now()} - useAuthentication - status ? ${status}`);
+  /** @type {boolean} Est-ce que l'utilisateur a obtenu un token valide ? */
+  const authenticated = useSelector(hasToken);
 
   /** @type {boolean} Est-ce que les données asynchrones sont maintenant disponibles ?*/
   const isLoading =
-    status === 'void' || status === 'pending' || status === 'updating';
+    (status === 'pending' || status === 'updating') & (status !== 'void');
 
   useEffect(() => {
-    console.log(
-      `${Date.now()} - useAuthentication - isConnected ? ${isConnected}`
-    );
-
-    if (!isLoading && !isConnected) {
+    if (!isLoading && !authenticated) {
+      console.warn(
+        `${Date.now()} - useAuthentication - authenticated ? ${authenticated}`
+      );
       // 🚨 l'utilisateur est rédirigé vers la page de connexion 👮‍♂️
       navigate(`/signin`);
     }
-  }, [isLoading, isConnected, navigate]);
+  }, [isLoading, authenticated, navigate, status]);
 
-  return isConnected;
+  return null;
 }

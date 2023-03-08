@@ -1,5 +1,13 @@
 // 1️⃣ Login
 export const loginSelector = (state) => state.login;
+export const hasToken = (state) => {
+  const regex = /^[\w-]+\.[\w-]+\.[\w-]+$/;
+  if (state.login.token !== null && regex.test(state.login.token)) {
+    return true;
+  } else {
+    return false;
+  }
+};
 
 // 2️⃣ Profile
 export const userIdSelector = (state) => state.profile.id;
